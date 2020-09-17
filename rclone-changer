@@ -86,10 +86,9 @@ class Rclone(object):
 class State(object):
     """
     State is a simple container class for the state of the tape changer, which includes 
-    slot count and which slot is loaded
+    which slot is loaded
     """
     loadedSlot = 0
-    slots = 8192
 
 
 class CommandOpts(object):
@@ -101,11 +100,15 @@ class CommandOpts(object):
     command = None
     slot = None
     archive = None
+    slots = None
+    vtape = None
 
     def __init__(self, params):
         self.changer = params.changerdevice
         self.slot = params.slot
         self.archive = params.archivedevice
+        self.slots = params.slots
+        self.vtape = params.vtape
 
 def parseArgs(args):
 
@@ -131,6 +134,12 @@ def parseArgs(args):
 
     parser.add_argument('--statefile', default='/var/lib/bacula/rclone-changer.state',
         help='Where to store our "changer" state')
+
+    parser.add_argument('--slots', type=int, default=8192,
+        help='Slots in changer')
+
+    parser.add_argument('--vtape', default='VTAPE',
+        help='Virtual tape file name prefix')
 
     parser.add_argument('changerdevice')
     parser.add_argument('command')
@@ -205,12 +214,12 @@ def unload(opts, state):
 # List changer slots with implied barcode data
 def list(opts, state):
     logging.info("Listing volumes in %s" % opts.changer)
-    for x in range(1,state.slots + 1):
-        print "{0}:VTAPE-{0:05n}".format(x)
+    for x in range(1,opts.slots + 1):
+        print "{0}:{1}-{0:05n}".format(x, opts.vtape)
 
 # Return number of changer slots
 def slots(opts, state):
-    print state.slots
+    print opts.slots
 
 # Call required sub based on changer action
 def dispatch(command, commandOpts, state):
