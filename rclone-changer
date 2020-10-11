@@ -201,6 +201,7 @@ def unload(opts, state):
     if opts.slot == state.loadedSlot:
         try:
             Rclone.copy(source, destination)
+            open(source, 'w').close()
             state.loadedSlot = 0
             logging.info("Unloaded volume %s to %s from %s" % (opts.slot, opts.changer, opts.archive))
         except Exception as e:
